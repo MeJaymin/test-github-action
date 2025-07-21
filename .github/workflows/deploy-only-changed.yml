@@ -1,0 +1,42 @@
+name: Deploy Only Changed Files
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  detect-and-prepare:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 2
+
+    - name: Detect changed files (safe for first commit)
+      id: detect
+      run: |
+        COMMIT_COUNT=$(git rev-list --count HEAD)
+        if [ "$COMMIT_COUNT" -eq 1 ]; then
+          git ls-files > changed_files.txt
+        else
+          git diff --name-only HEAD^ HEAD > changed_files.txt
+        fi
+        cat changed_files.txt
+
+    - name: Copy changed files to deploy folder
+      run: |
+        mkdir -p deploy
+        while IFS= read -r file; do
+          if [[ -f "$file" ]]; then
+            mkdir -p "deploy/$(dirname "$file")"
+            cp "$file" "deploy/$file"
+          fi
+        done < changed_files.txt
+
+    - name: Upload deploy folder
+      uses: actions/upload-artifact@v4
+      with:
+        name: deploy-folder
+        path: deploy/
