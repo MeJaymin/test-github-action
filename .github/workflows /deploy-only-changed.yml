@@ -3,7 +3,7 @@ name: Deploy Only Changed Files
 on:
   push:
     branches:
-      - main  # Or your desired branch
+      - main  # You can change to `main` or any branch
 
 jobs:
   detect-and-prepare:
@@ -13,7 +13,7 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
       with:
-        fetch-depth: 2  # Needed to access previous commit
+        fetch-depth: 2  # Needed to get the previous commit
 
     - name: Detect changed files (safe for first commit)
       id: detect
